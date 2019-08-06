@@ -6,11 +6,11 @@ from time import sleep
 
 cascPath = "haarcascade_frontalface_default.xml"
 faceCascade = cv2.CascadeClassifier(cascPath)
-log.basicConfig(filename='webcam.log',level=log.INFO)
+log.basicConfig(filename='webcam.log', level=log.INFO)
 
 video_capture = cv2.VideoCapture(0)
 anterior = 0
-
+facesArray = []
 while True:
     if not video_capture.isOpened():
         print('Unable to load camera.')
@@ -32,15 +32,28 @@ while True:
     # Draw a rectangle around the faces
     for (x, y, w, h) in faces:
         cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-
+        # print(x, y),
+        facesArray.append((int(x+w*.5), int(y+h*.4)))
+    x_total = 0
+    y_total = 0
+    if (len(facesArray) > 0):
+        for coordinents in facesArray:
+            x_total = x_total + coordinents[0]
+            y_total = y_total + coordinents[1]
+        look_position = (int(x_total/len(facesArray)),
+                         int(y_total/len(facesArray)))
+        cv2.circle(frame, look_position, 10, (0, 0, 255), -1)
+        # print(look_position)
+    else:
+        pass
+        # print("no face")
+    facesArray = []
     if anterior != len(faces):
         anterior = len(faces)
         log.info("faces: "+str(len(faces))+" at "+str(dt.datetime.now()))
 
-
     # Display the resulting frame
     cv2.imshow('Video', frame)
-
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
